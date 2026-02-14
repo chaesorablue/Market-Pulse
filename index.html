@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Market Dashboard | 실시간 종합 시세보드</title>
+    
+    <!-- SEO 및 소셜 공유 설정 -->
+    <meta name="description" content="바이낸스 실시간 시세 및 글로벌 금융 지수 모니터링 대시보드">
+    <meta property="og:title" content="실시간 종합 마켓 보드">
+    <meta property="og:description" content="BTC, ETH, SOL, XRP 및 금, 나스닥 시세를 실시간으로 확인하세요.">
+    <meta property="og:type" content="website">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap');
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #0b0e11;
+            color: #eaecef;
+            overflow-x: hidden;
+        }
+
+        /* 가격 변동 애니메이션 */
+        @keyframes flash-up { 0% { color: #02c076; } 100% { color: inherit; } }
+        @keyframes flash-down { 0% { color: #f84960; } 100% { color: inherit; } }
+
+        .price-up { animation: flash-up 1s ease-out; color: #02c076 !important; }
+        .price-down { animation: flash-down 1s ease-out; color: #f84960 !important; }
+        
+        .card {
+            background: #1e2329;
+            border: 1px solid #2b3139;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .card:hover {
+            border-color: #f0b90b;
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+        
+        .connected { background-color: #02c076; box-shadow: 0 0 8px #02c076; }
+        .disconnected { background-color: #f84960; box-shadow: 0 0 8px #f84960; }
+
+        .market-label {
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+        }
+        .label-crypto { background: #f0b90b20; color: #f0b90b; }
+        .label-finance { background: #3b82f620; color: #3b82f6; }
+
+        #clock-container {
+            font-family: 'JetBrains Mono', monospace;
+            background: linear-gradient(145deg, #1e2329, #161a1e);
+        }
+        
+        /* 스크롤바 커스텀 */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0b0e11; }
+        ::-webkit-scrollbar-thumb { background: #2b3139; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #f0b90b; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center p-4 md:p-8">
+
+    <!-- 헤더 영역 -->
+    <header class="w-full max-w-6xl mb-10 flex flex-col lg:flex-row justify-between items-center gap-6 border-b border-gray-800 pb-8">
+        <div class="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+            <div>
+                <h1 class="text-3xl font-extrabold flex items-center justify-center md:justify-start gap-3">
+                    <i data-lucide="bar-chart-3" class="text-yellow-500 w-8 h-8"></i>
+                    종합 실시간 마켓 보드
+                </h1>
+                <p class="text-gray-400 text-sm mt-1 font-medium tracking-wide">GLOBAL MARKET REAL-TIME MONITORING</p>
+            </div>
+            
+            <!-- 실시간 시계 컴포넌트 -->
+            <div id="clock-container" class="border border-gray-700 rounded-2xl px-6 py-3 flex flex-col items-center md:items-start shadow-inner">
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                    </span>
+                    <span id="clock-date" class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">YEAR MONTH DAY</span>
+                </div>
+                <div id="clock-time" class="text-3xl font-bold text-yellow-500 tracking-tighter">00:00:00</div>
+            </div>
+        </div>
+
+        <div class="flex items-center bg-[#1e2329] px-5 py-2.5 rounded-full border border-gray-700 shadow-sm">
+            <span id="connection-status" class="status-dot disconnected"></span>
+            <span id="status-text" class="text-xs font-bold text-gray-300 uppercase tracking-widest">Connecting...</span>
+        </div>
+    </header>
+
+    <!-- 시세 대시보드 -->
+    <main class="w-full max-w-6xl space-y-12">
+        
+        <!-- 상단 레이어: 주요 지수 (BTC, Gold, Nasdaq) -->
+        <section>
+            <div class="flex items-center gap-3 mb-6">
+                <div class="h-6 w-1 bg-blue-500 rounded-full"></div>
+                <h3 class="text-gray-200 text-sm font-bold uppercase tracking-[0.2em]">Global Indices</h3>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Bitcoin -->
+                <div id="card-BTCUSDT" class="card rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-orange-500/10 p-2.5 rounded-xl"><i data-lucide="bitcoin" class="text-orange-500 w-6 h-6"></i></div>
+                            <div>
+                                <h2 class="font-bold text-lg">Bitcoin</h2>
+                                <span class="market-label label-crypto">Primary</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="price-BTCUSDT" class="text-3xl font-bold tracking-tight">$--.---</div>
+                    <div class="flex items-center gap-3 mt-2">
+                        <div id="change-BTCUSDT" class="text-sm font-bold text-gray-400">0.00%</div>
+                        <div id="cap-BTCUSDT" class="text-[10px] text-gray-500 font-medium bg-gray-800/50 px-2 py-0.5 rounded">MCap: $--B</div>
+                    </div>
+                </div>
+
+                <!-- Gold Spot -->
+                <div class="card rounded-2xl p-6 shadow-xl border-yellow-900/20">
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-yellow-500/10 p-2.5 rounded-xl"><i data-lucide="sparkles" class="text-yellow-400 w-6 h-6"></i></div>
+                            <div>
+                                <h2 class="font-bold text-lg">Gold Spot</h2>
+                                <span class="market-label label-finance">Safe Haven</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="price-GOLD" class="text-3xl font-bold tracking-tight">$--.---</div>
+                    <div id="change-GOLD" class="text-sm mt-2 font-bold text-gray-400">0.00%</div>
+                </div>
+
+                <!-- NASDAQ Index -->
+                <div class="card rounded-2xl p-6 shadow-xl">
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-blue-500/10 p-2.5 rounded-xl"><i data-lucide="trending-up" class="text-blue-400 w-6 h-6"></i></div>
+                            <div>
+                                <h2 class="font-bold text-lg">NASDAQ 100</h2>
+                                <span class="market-label label-finance">US Tech</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="price-NASDAQ" class="text-3xl font-bold tracking-tight">$--.---</div>
+                    <div id="change-NASDAQ" class="text-sm mt-2 font-bold text-gray-400">0.00%</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 하단 레이어: 주요 알트코인 (ETH, SOL, XRP) -->
+        <section>
+            <div class="flex items-center gap-3 mb-6">
+                <div class="h-6 w-1 bg-yellow-500 rounded-full"></div>
+                <h3 class="text-gray-200 text-sm font-bold uppercase tracking-[0.2em]">Top Altcoins</h3>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Ethereum -->
+                <div id="card-ETHUSDT" class="card rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="bg-indigo-500/10 p-2.5 rounded-xl"><i data-lucide="component" class="text-indigo-400 w-6 h-6"></i></div>
+                        <div><h2 class="font-bold text-lg">Ethereum</h2><span class="text-[10px] text-gray-500 font-bold uppercase">ETH / USDT</span></div>
+                    </div>
+                    <div id="price-ETHUSDT" class="text-3xl font-bold tracking-tight">$--.---</div>
+                    <div class="flex items-center gap-3 mt-2">
+                        <div id="change-ETHUSDT" class="text-sm font-bold text-gray-400">0.00%</div>
+                        <div id="cap-ETHUSDT" class="text-[10px] text-gray-500 font-medium bg-gray-800/50 px-2 py-0.5 rounded">MCap: $--B</div>
+                    </div>
+                </div>
+
+                <!-- Solana -->
+                <div id="card-SOLUSDT" class="card rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="bg-teal-500/10 p-2.5 rounded-xl"><i data-lucide="zap" class="text-teal-400 w-6 h-6"></i></div>
+                        <div><h2 class="font-bold text-lg">Solana</h2><span class="text-[10px] text-gray-500 font-bold uppercase">SOL / USDT</span></div>
+                    </div>
+                    <div id="price-SOLUSDT" class="text-3xl font-bold tracking-tight">$--.---</div>
+                    <div class="flex items-center gap-3 mt-2">
+                        <div id="change-SOLUSDT" class="text-sm font-bold text-gray-400">0.00%</div>
+                        <div id="cap-SOLUSDT" class="text-[10px] text-gray-500 font-medium bg-gray-800/50 px-2 py-0.5 rounded">MCap: $--B</div>
+                    </div>
+                </div>
+
+                <!-- Ripple (XRP) -->
+                <div id="card-XRPUSDT" class="card rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="bg-blue-400/10 p-2.5 rounded-xl"><i data-lucide="globe" class="text-blue-300 w-6 h-6"></i></div>
+                        <div><h2 class="font-bold text-lg">Ripple</h2><span class="text-[10px] text-gray-500 font-bold uppercase">XRP / USDT</span></div>
+                    </div>
+                    <div id="price-XRPUSDT" class="text-3xl font-bold tracking-tight">$--.---</div>
+                    <div class="flex items-center gap-3 mt-2">
+                        <div id="change-XRPUSDT" class="text-sm font-bold text-gray-400">0.00%</div>
+                        <div id="cap-XRPUSDT" class="text-[10px] text-gray-500 font-medium bg-gray-800/50 px-2 py-0.5 rounded">MCap: $--B</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="mt-20 py-10 w-full border-t border-gray-800 text-gray-500 text-[11px] text-center leading-relaxed font-medium">
+        <p class="mb-2">Powered by Binance WebSocket API & Public Financial Data</p>
+        <p class="mb-1 text-gray-400">&copy; 2024 Market Intelligence Dashboard. All rights reserved.</p>
+        <p class="text-yellow-600/70 uppercase tracking-widest font-bold">Created by: chaesorablue@gmail.com</p>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+
+        // 0. 시계 구현
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const dateString = now.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' });
+            document.getElementById('clock-time').innerText = timeString;
+            document.getElementById('clock-date').innerText = dateString;
+        }
+
+        // 1. 암호화폐 처리
+        const cryptoSymbols = ['btcusdt', 'ethusdt', 'solusdt', 'xrpusdt'];
+        
+        /**
+         * 2025 최신 유통 공급량 업데이트 (Approximate)
+         * BTC: 19.8M
+         * ETH: 120.4M
+         * SOL: 474.6M (최근 스테이킹 및 유통량 증가 반영)
+         * XRP: 56.9B (에스크로 해제 반영)
+         */
+        const circulatingSupplies = {
+            'BTCUSDT': 19800000,
+            'ETHUSDT': 120430000,
+            'SOLUSDT': 474600000,
+            'XRPUSDT': 56910000000
+        };
+
+        const cryptoPriceEls = {};
+        const cryptoChangeEls = {};
+        const cryptoCapEls = {};
+        const lastPrices = {};
+
+        cryptoSymbols.forEach(s => {
+            const upper = s.toUpperCase();
+            cryptoPriceEls[upper] = document.getElementById(`price-${upper}`);
+            cryptoChangeEls[upper] = document.getElementById(`change-${upper}`);
+            cryptoCapEls[upper] = document.getElementById(`cap-${upper}`);
+            lastPrices[upper] = 0;
+        });
+
+        const statusDot = document.getElementById('connection-status');
+        const statusText = document.getElementById('status-text');
+
+        function connectCrypto() {
+            const streamNames = cryptoSymbols.map(s => `${s}@ticker`).join('/');
+            const socket = new WebSocket(`wss://stream.binance.com:9443/ws/${streamNames}`);
+
+            socket.onopen = () => {
+                statusDot.className = 'status-dot connected';
+                statusText.innerText = "Connected (Live)";
+            };
+
+            socket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                updateCryptoUI(data);
+            };
+
+            socket.onclose = () => {
+                statusDot.className = 'status-dot disconnected';
+                statusText.innerText = "Reconnecting...";
+                setTimeout(connectCrypto, 3000);
+            };
+        }
+
+        function updateCryptoUI(data) {
+            const symbol = data.s;
+            const price = parseFloat(data.c);
+            const changePercent = parseFloat(data.P).toFixed(2);
+            
+            const priceEl = cryptoPriceEls[symbol];
+            const changeEl = cryptoChangeEls[symbol];
+            const capEl = cryptoCapEls[symbol];
+
+            if (!priceEl) return;
+
+            // 시가총액 계산 (Billion 단위)
+            if (circulatingSupplies[symbol]) {
+                const marketCap = (price * circulatingSupplies[symbol]) / 1_000_000_000;
+                capEl.innerText = `MCap: $${marketCap.toLocaleString(undefined, { maximumFractionDigits: 1 })}B`;
+            }
+
+            // 가격 변동 효과
+            if (lastPrices[symbol] !== 0) {
+                if (price > lastPrices[symbol]) {
+                    priceEl.classList.add('price-up');
+                    setTimeout(() => priceEl.classList.remove('price-up'), 1000);
+                } else if (price < lastPrices[symbol]) {
+                    priceEl.classList.add('price-down');
+                    setTimeout(() => priceEl.classList.remove('price-down'), 1000);
+                }
+            }
+            lastPrices[symbol] = price;
+
+            priceEl.innerText = `$${price.toLocaleString(undefined, { minimumFractionDigits: price < 10 ? 4 : 2 })}`;
+            const prefix = changePercent > 0 ? '+' : '';
+            changeEl.innerText = `${prefix}${changePercent}%`;
+            changeEl.className = `text-sm font-bold ${changePercent > 0 ? 'text-[#02c076]' : (changePercent < 0 ? 'text-[#f84960]' : 'text-gray-400')}`;
+        }
+
+        // 2. 금융 지수 처리 (Gold, Nasdaq)
+        async function fetchMarketData() {
+            try {
+                // Gold (PAXG)
+                const goldRes = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=PAXGUSDT');
+                const goldData = await goldRes.json();
+                document.getElementById('price-GOLD').innerText = `$${parseFloat(goldData.lastPrice).toLocaleString()}`;
+                const gChange = parseFloat(goldData.priceChangePercent).toFixed(2);
+                document.getElementById('change-GOLD').innerText = `${gChange > 0 ? '+' : ''}${gChange}%`;
+                document.getElementById('change-GOLD').className = `text-sm mt-2 font-bold ${gChange > 0 ? 'text-[#02c076]' : 'text-[#f84960]'}`;
+
+                // Nasdaq (Demo - 실제 서비스 시 전용 API 연동 권장)
+                const baseNasdaq = 18245.30;
+                const mockNasdaq = baseNasdaq + (Math.random() * 20 - 10);
+                document.getElementById('price-NASDAQ').innerText = `${mockNasdaq.toLocaleString(undefined, {maximumFractionDigits:2})}`;
+                document.getElementById('change-NASDAQ').innerText = `+0.85%`;
+                document.getElementById('change-NASDAQ').className = "text-sm mt-2 font-bold text-[#02c076]";
+            } catch (e) { console.error("Index fetch error"); }
+        }
+
+        window.onload = () => {
+            updateClock();
+            setInterval(updateClock, 1000);
+            connectCrypto();
+            fetchMarketData();
+            setInterval(fetchMarketData, 30000);
+        };
+    </script>
+</body>
+</html>
