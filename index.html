@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Market Dashboard | 실시간 종합 시세보드</title>
+    <title>Global Market Pulse | 실시간 종합 시세보드</title>
     
     <!-- SEO 및 소셜 공유 설정 -->
     <meta name="description" content="바이낸스 실시간 시세 및 글로벌 금융 지수 모니터링 대시보드">
-    <meta property="og:title" content="실시간 종합 마켓 보드">
+    <meta property="og:title" content="Global Market Pulse 📈">
     <meta property="og:description" content="BTC, ETH, SOL, XRP 및 금, 나스닥 시세를 실시간으로 확인하세요.">
     <meta property="og:type" content="website">
 
@@ -74,6 +74,17 @@
         ::-webkit-scrollbar-track { background: #0b0e11; }
         ::-webkit-scrollbar-thumb { background: #2b3139; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #f0b90b; }
+
+        /* 쿠팡 배너 스타일 */
+        .coupang-banner {
+            background: linear-gradient(90deg, #1e2329 0%, #2b3139 100%);
+            border: 1px solid #3b82f6;
+            transition: all 0.3s ease;
+        }
+        .coupang-banner:hover {
+            background: linear-gradient(90deg, #2b3139 0%, #1e2329 100%);
+            border-color: #f0b90b;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center p-4 md:p-8">
@@ -84,12 +95,11 @@
             <div>
                 <h1 class="text-3xl font-extrabold flex items-center justify-center md:justify-start gap-3">
                     <i data-lucide="bar-chart-3" class="text-yellow-500 w-8 h-8"></i>
-                    종합 실시간 마켓 보드
+                    Global Market Pulse
                 </h1>
                 <p class="text-gray-400 text-sm mt-1 font-medium tracking-wide">GLOBAL MARKET REAL-TIME MONITORING</p>
             </div>
             
-            <!-- 실시간 시계 컴포넌트 -->
             <div id="clock-container" class="border border-gray-700 rounded-2xl px-6 py-3 flex flex-col items-center md:items-start shadow-inner">
                 <div class="flex items-center gap-2 mb-1">
                     <span class="relative flex h-2 w-2">
@@ -118,7 +128,6 @@
                 <h3 class="text-gray-200 text-sm font-bold uppercase tracking-[0.2em]">Global Indices</h3>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Bitcoin -->
                 <div id="card-BTCUSDT" class="card rounded-2xl p-6 shadow-xl relative overflow-hidden">
                     <div class="flex justify-between items-center mb-6">
                         <div class="flex items-center gap-3">
@@ -136,7 +145,6 @@
                     </div>
                 </div>
 
-                <!-- Gold Spot -->
                 <div class="card rounded-2xl p-6 shadow-xl border-yellow-900/20">
                     <div class="flex justify-between items-center mb-6">
                         <div class="flex items-center gap-3">
@@ -151,7 +159,6 @@
                     <div id="change-GOLD" class="text-sm mt-2 font-bold text-gray-400">0.00%</div>
                 </div>
 
-                <!-- NASDAQ Index -->
                 <div class="card rounded-2xl p-6 shadow-xl">
                     <div class="flex justify-between items-center mb-6">
                         <div class="flex items-center gap-3">
@@ -175,7 +182,6 @@
                 <h3 class="text-gray-200 text-sm font-bold uppercase tracking-[0.2em]">Top Altcoins</h3>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Ethereum -->
                 <div id="card-ETHUSDT" class="card rounded-2xl p-6 shadow-xl">
                     <div class="flex items-center gap-3 mb-6">
                         <div class="bg-indigo-500/10 p-2.5 rounded-xl"><i data-lucide="component" class="text-indigo-400 w-6 h-6"></i></div>
@@ -188,7 +194,6 @@
                     </div>
                 </div>
 
-                <!-- Solana -->
                 <div id="card-SOLUSDT" class="card rounded-2xl p-6 shadow-xl">
                     <div class="flex items-center gap-3 mb-6">
                         <div class="bg-teal-500/10 p-2.5 rounded-xl"><i data-lucide="zap" class="text-teal-400 w-6 h-6"></i></div>
@@ -201,7 +206,6 @@
                     </div>
                 </div>
 
-                <!-- Ripple (XRP) -->
                 <div id="card-XRPUSDT" class="card rounded-2xl p-6 shadow-xl">
                     <div class="flex items-center gap-3 mb-6">
                         <div class="bg-blue-400/10 p-2.5 rounded-xl"><i data-lucide="globe" class="text-blue-300 w-6 h-6"></i></div>
@@ -216,9 +220,28 @@
             </div>
         </section>
 
+        <!-- 쿠팡 파트너스 배너 영역 -->
+        <section class="w-full mt-16">
+            <a href="https://link.coupang.com/a/dMfqR2" target="_blank" rel="noopener noreferrer" class="coupang-banner w-full block rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-4 group">
+                <div class="flex items-center gap-4">
+                    <div class="bg-blue-600 p-3 rounded-full group-hover:bg-yellow-500 transition-colors">
+                        <i data-lucide="shopping-cart" class="text-white w-6 h-6"></i>
+                    </div>
+                    <div class="text-center md:text-left">
+                        <h4 class="font-bold text-lg text-white">최저가 쇼핑 바로가기</h4>
+                        <p class="text-gray-400 text-sm">대시보드 운영을 후원하는 가장 쉬운 방법!</p>
+                    </div>
+                </div>
+                <div class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold group-hover:scale-105 transition-transform">
+                    지금 구경하기
+                </div>
+            </a>
+            <p class="text-[13px] text-gray-500 text-center mt-4 font-medium leading-relaxed">이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</p>
+        </section>
+
     </main>
 
-    <footer class="mt-20 py-10 w-full border-t border-gray-800 text-gray-500 text-[11px] text-center leading-relaxed font-medium">
+    <footer class="mt-16 py-10 w-full border-t border-gray-800 text-gray-500 text-[11px] text-center leading-relaxed font-medium">
         <p class="mb-2">Powered by Binance WebSocket API & Public Financial Data</p>
         <p class="mb-1 text-gray-400">&copy; 2024 Market Intelligence Dashboard. All rights reserved.</p>
         <p class="text-yellow-600/70 uppercase tracking-widest font-bold">Created by: chaesorablue@gmail.com</p>
@@ -227,7 +250,6 @@
     <script>
         lucide.createIcons();
 
-        // 0. 시계 구현
         function updateClock() {
             const now = new Date();
             const timeString = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -236,16 +258,7 @@
             document.getElementById('clock-date').innerText = dateString;
         }
 
-        // 1. 암호화폐 처리
         const cryptoSymbols = ['btcusdt', 'ethusdt', 'solusdt', 'xrpusdt'];
-        
-        /**
-         * 2025 최신 유통 공급량 업데이트 (Approximate)
-         * BTC: 19.8M
-         * ETH: 120.4M
-         * SOL: 474.6M (최근 스테이킹 및 유통량 증가 반영)
-         * XRP: 56.9B (에스크로 해제 반영)
-         */
         const circulatingSupplies = {
             'BTCUSDT': 19800000,
             'ETHUSDT': 120430000,
@@ -301,13 +314,11 @@
 
             if (!priceEl) return;
 
-            // 시가총액 계산 (Billion 단위)
             if (circulatingSupplies[symbol]) {
                 const marketCap = (price * circulatingSupplies[symbol]) / 1_000_000_000;
                 capEl.innerText = `MCap: $${marketCap.toLocaleString(undefined, { maximumFractionDigits: 1 })}B`;
             }
 
-            // 가격 변동 효과
             if (lastPrices[symbol] !== 0) {
                 if (price > lastPrices[symbol]) {
                     priceEl.classList.add('price-up');
@@ -325,10 +336,8 @@
             changeEl.className = `text-sm font-bold ${changePercent > 0 ? 'text-[#02c076]' : (changePercent < 0 ? 'text-[#f84960]' : 'text-gray-400')}`;
         }
 
-        // 2. 금융 지수 처리 (Gold, Nasdaq)
         async function fetchMarketData() {
             try {
-                // Gold (PAXG)
                 const goldRes = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=PAXGUSDT');
                 const goldData = await goldRes.json();
                 document.getElementById('price-GOLD').innerText = `$${parseFloat(goldData.lastPrice).toLocaleString()}`;
@@ -336,7 +345,6 @@
                 document.getElementById('change-GOLD').innerText = `${gChange > 0 ? '+' : ''}${gChange}%`;
                 document.getElementById('change-GOLD').className = `text-sm mt-2 font-bold ${gChange > 0 ? 'text-[#02c076]' : 'text-[#f84960]'}`;
 
-                // Nasdaq (Demo - 실제 서비스 시 전용 API 연동 권장)
                 const baseNasdaq = 18245.30;
                 const mockNasdaq = baseNasdaq + (Math.random() * 20 - 10);
                 document.getElementById('price-NASDAQ').innerText = `${mockNasdaq.toLocaleString(undefined, {maximumFractionDigits:2})}`;
